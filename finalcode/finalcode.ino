@@ -24,7 +24,7 @@ int dataRead;
 bool pin9Active = false;
 unsigned long pin9StartTime = 0;
 const long interval = 100;       // Blinking interval for pins 8, 9, and 10
-const long delayInterval = 4000; // Duration to keep pin 11 HIGH
+const long delayInterval = 3000; // Duration to keep pin 11 HIGH
 
 void setup() {
   Serial.begin(9600);
@@ -92,7 +92,8 @@ void forBuzzer()
   // Check if x is greater than 0
   if (dataRead > 19)
   {
-    digitalWrite(11, HIGH);
+    tone(buzzer, 1000); // Send 1KHz sound signal...
+    delay(delayInterval);        // ...for 1 sec
     pin11Active = true;
   }
 
@@ -107,7 +108,7 @@ void forBuzzer()
   {
     // Turn off pin 11 after 3 seconds
     pin9Active = false;
-    digitalWrite(11, LOW); // Turn off pin 11
+    noTone(buzzer); // Stop sound...
   }
 }
 
