@@ -19,12 +19,19 @@ float rps = 0, speed = 0;
 int potValue = 0;
 float maxSpeed = 0, minSpeed = 0;
 float wheelCircumference = 3.1416 * diameter;  // wheelCircumference = 2 * pi * radious or pi * diameter
+const int buzzer = 9;                          // buzzer to arduino pin 9
+int dataRead;
+bool pin9Active = false;
+unsigned long pin9StartTime = 0;
+const long interval = 100;       // Blinking interval for pins 8, 9, and 10
+const long delayInterval = 4000; // Duration to keep pin 11 HIGH
 
 void setup() {
   Serial.begin(9600);
   lcd.init(); lcd.backlight(); lcd.clear();
   lcd.setCursor(0, 0); lcd.print("Speed Alarm");
   lcd.setCursor(0, 1); lcd.print("  SYSTEM Kit ");
+  pinMode(buzzer, OUTPUT); // Set buzzer - pin 9 as an output
 
   pinMode(en, OUTPUT); pinMode(in1, OUTPUT); pinMode(in2, OUTPUT);
 
@@ -43,6 +50,8 @@ void setup() {
 }
 
 void loop() {
+
+  
   currentMillis = millis();
   if (currentMillis - prevMillis >= measuredTime) {
     rps = steps / encoderStep;
@@ -68,7 +77,38 @@ void loop() {
   analogWrite(en, potValue); //digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
 
   // Serial.print(" Mapped:");
-  // Serial.print(potValue);  
+  // Serial.print(potValue);
+  forBuzzer()
+}
+
+void forBuzzer()
+{
+  dataRead = Serial.readString().toInt();
+
+  // Blink pins 8, 9, and 10
+  unsigned long currentMillis = millis();
+  static unsigned long previousBlinkMillis = 0;
+
+  // Check if x is greater than 0
+  if (dataRead > 19)
+  {
+    digitalWrite(11, HIGH);
+    pin11Active = true;
+  }
+
+  if (!pin9Active)
+  {
+    // Start the timer for pin 11
+    // pin11Active = true;
+    pin9StartTime = currentMillis;
+    // digitalWrite(11, HIGH); // Turn on pin 11
+  }
+  else if (currentMillis - pin9StartTime >= delayInterval)
+  {
+    // Turn off pin 11 after 3 seconds
+    pin9Active = false;
+    digitalWrite(11, LOW); // Turn off pin 11
+  }
 }
 
 void countStape() {
