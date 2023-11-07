@@ -80,7 +80,7 @@ void loop() {
 
 void forBuzzer()
 {
-  String input = Serial.readString().toInt();
+  String input = Serial.readString();
 
   if (input.length() > 40)
   {
