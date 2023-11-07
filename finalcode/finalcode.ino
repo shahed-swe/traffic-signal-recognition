@@ -21,10 +21,6 @@ float maxSpeed = 0, minSpeed = 0;
 float wheelCircumference = 3.1416 * diameter;  // wheelCircumference = 2 * pi * radious or pi * diameter
 const int buzzer = 9;                          // buzzer to arduino pin 9
 int dataRead;
-bool pin9Active = false;
-unsigned long pin9StartTime = 0;
-const long interval = 100;       // Blinking interval for pins 8, 9, and 10
-const long delayInterval = 3000; // Duration to keep pin 11 HIGH
 
 void setup() {
   Serial.begin(9600);
@@ -51,64 +47,44 @@ void setup() {
 
 void loop() {
 
-  
+  forBuzzer();
+
+
   currentMillis = millis();
   if (currentMillis - prevMillis >= measuredTime) {
     rps = steps / encoderStep;
     speed = wheelCircumference * rps *3.6;
 
-
-    // if(speed > maxSpeed) maxSpeed = speed;
-    // Serial.print("  Speed:"); Serial.print(speed); Serial.println("");
     lcd.setCursor(6, 0); lcd.print(speed); lcd.print(" Km/H  ");
-    // lcd.setCursor(0, 0); lcd.print("Speed:"); lcd.print(speed); lcd.print(" Km/H  ");
-    // lcd.setCursor(0, 1); lcd.print("Max:"); lcd.print(maxSpeed); lcd.print(" Km/H  ");
-    
+
+    if (dataRead > speed)
+    {
+      digitalWrite(9, HIGH);
+      delay(4000);
+      digitalWrite(9, LOW);
+      delay(4000);
+    }
+
     prevMillis = currentMillis;
     steps = 0;
   }
 
   potValue = analogRead(potPin);
 
-  // Serial.print(" Raw: "); Serial.print(potValue);
-  // Serial.print(" Step: "); Serial.println(steps);
 
   potValue = map(potValue, 0, 1023, 0, 245);
-  analogWrite(en, potValue); //digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
+  analogWrite(en, potValue);
 
-  // Serial.print(" Mapped:");
-  // Serial.print(potValue);
-  forBuzzer()
+
 }
 
 void forBuzzer()
 {
-  dataRead = Serial.readString().toInt();
+  String input = Serial.readString().toInt();
 
-  // Blink pins 8, 9, and 10
-  unsigned long currentMillis = millis();
-  static unsigned long previousBlinkMillis = 0;
-
-  // Check if x is greater than 0
-  if (dataRead > 19)
+  if (input.length() > 40)
   {
-    tone(buzzer, 1000); // Send 1KHz sound signal...
-    delay(delayInterval);        // ...for 1 sec
-    pin11Active = true;
-  }
-
-  if (!pin9Active)
-  {
-    // Start the timer for pin 11
-    // pin11Active = true;
-    pin9StartTime = currentMillis;
-    // digitalWrite(11, HIGH); // Turn on pin 11
-  }
-  else if (currentMillis - pin9StartTime >= delayInterval)
-  {
-    // Turn off pin 11 after 3 seconds
-    pin9Active = false;
-    noTone(buzzer); // Stop sound...
+    dataRead = input.toInt();
   }
 }
 
